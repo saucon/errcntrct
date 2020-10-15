@@ -1,6 +1,20 @@
 # errcntrct
 
-errcntrct (Error Contract) is a library for create error contract and return simple struct. This is compatible with c.JSON in gin framework. You will define error contract in JSON format, check `errorContract.json` file for example.
+errcntrct (Error Contract) is a library for create error contract and return simple struct. This is compatible with c.JSON in gin framework. 
+You will define error contract in JSON format, check `errorContract.json` file for example.
+
+contractError.json
+```json
+{
+    "1000": {"var": "ErrInvalidRequestFamily", "msg": "Invalid Request"},
+    "1002": {"var": "ErrInvalidDateFormat", "msg": "Invalid date format"},
+    "1003": {"var": "ErrEmailNotFound", "msg": "Could not find email"},
+
+    "9999": {"var": "ErrUnexpectedError", "msg": "Unexpected Error"}
+}
+```
+
+
 
 ## Installation
 
@@ -100,4 +114,41 @@ Flags:
 
 Global Flags:
       --config string   config file (default is $HOME/.errcntrct.yaml)
+```
+
+With this you can generate const in go with json file that you define and your code will be like this.
+
+```go
+package main
+
+import (
+"errors"
+"fmt"
+"github.com/Saucon/errcntrct"
+"net/http"
+)
+
+const PATH_TO_JSONFILE = "errorContract.json"
+
+func main() {
+    err := errcntrct.InitContract(PATH_TO_JSONFILE)
+    if err != nil {
+        // handle this error
+    }
+    
+    // This is with single error 
+    httpstatuscode, errData := errcntrct.ErrorMessage(http.StatusBadRequest,"", errors.New("1001"))
+    fmt.Println("http status code", httpstatuscode)
+    fmt.Println("errData struct" , errData)
+    
+    // This is with []error
+    // "1000" in contractError.json is the family code
+    errors := []error{contract.ErrEmailNotFound,contract.ErrEmailNotFound,}
+    httpstatuscode, errData = errcntrct.ErrorMessage(http.StatusBadRequest, contract.ErrInvalidRequestFamily, errors)
+    fmt.Println("http status code", httpstatuscode)
+    fmt.Println("errData struct" , errData)  
+
+    // you can use in gin with c.JSON(errcntrct.ErrorMessage(http.StatusBadRequest, "1000", []error{errors.New("1001"),errors.New("1001"),}))
+    
+}
 ```
