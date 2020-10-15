@@ -32,7 +32,7 @@ var genCmd = &cobra.Command{
 	Long: `A tool to convert your JSON contract into golang. 
 For example:
 
-	errcntrct gen -i errorContract.json -o example/const.go
+	errcntrct gen -s errorContract.json -o errcntrct/example/const.go -p contract
 
 With this you dont need to declare const in go, just copy 
 the generated code to your project`,
