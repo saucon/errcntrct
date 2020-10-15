@@ -44,6 +44,7 @@ func InitContract(pathfilename string) error{
 	return nil
 }
 
+
 // if err is single object then you can ignore codefamily using empty string ""
 // if err is array then you can fill codefamily with actual error code
 func ErrorMessage(statuscode int, codefamily string, err interface{}) (httpCode int, errorData ErrorData) {
