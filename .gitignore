@@ -27,7 +27,7 @@ dist/
 .idea/
 
 # JetBrains IDE
-.idea/
+.git remote add origin https://github.com/Saucon/errcntrct.git/
 
 # Unit test reports
 TEST*.xml

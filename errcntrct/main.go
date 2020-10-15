@@ -1,58 +1,22 @@
+/*
+Copyright © 2020 NAME HERE <EMAIL ADDRESS>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package main
 
-import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"os"
-)
+import "github.com/Saucon/errcntrct/errcntrct/cmd"
 
-
-// ./errcntrct-gen -i "errorContract.json" -p "contract" -o "example-generated/contract.go"
-func main (){
-	var contractMap map[string]objContract
-	var err error
-
-	contractMap, err = loadFile("errorContract.json")
-	fmt.Println("Hello World")
-
-
-	f, err := os.Create("errcntrct/example-generated/const.go")
-	if err != nil {
-
-	}
-	defer f.Close()
-
-	f.WriteString("package contract\n\n\n")
-	f.WriteString(`// this file is example-generated using .json file contract`+"\n")
-	f.WriteString("const (\n")
-
-	for code, obj := range contractMap {
-		f.WriteString("\t"+obj.ConstVar+" = "+`"`+code+`"`+"\n")
-	}
- 	f.WriteString(")\n")
-	f.Sync()
-}
-
-
-func loadFile(pathfilename string) (map[string]objContract,error){
-	var file []byte
-	var err error
-	var eC map[string]objContract
-
-	file, err = ioutil.ReadFile(pathfilename)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(file, &eC)
-	if err != nil {
-		return nil, err
-	}
-
-	return eC, nil
-}
-
-type objContract struct {
-	ConstVar 	string `json:"var"`
-	Msg 		string `json:"msg"`
+func main() {
+	cmd.Execute()
 }
