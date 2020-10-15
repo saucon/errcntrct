@@ -137,7 +137,7 @@ func main() {
     }
     
     // This is with single error 
-    httpstatuscode, errData := errcntrct.ErrorMessage(http.StatusBadRequest,"", errors.New("1001"))
+    httpstatuscode, errData := errcntrct.ErrorMessage(http.StatusBadRequest,"", contract.ErrEmailNotFound)
     fmt.Println("http status code", httpstatuscode)
     fmt.Println("errData struct" , errData)
     
@@ -148,7 +148,7 @@ func main() {
     fmt.Println("http status code", httpstatuscode)
     fmt.Println("errData struct" , errData)  
 
-    // you can use in gin with c.JSON(errcntrct.ErrorMessage(http.StatusBadRequest, "1000", []error{errors.New("1001"),errors.New("1001"),}))
+    // you can use in gin with c.JSON(errcntrct.ErrorMessage(http.StatusBadRequest, contract.ErrInvalidRequestFamily, errors))
     
 }
 ```
