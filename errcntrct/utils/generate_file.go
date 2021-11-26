@@ -26,8 +26,8 @@ func TemplateJSONtoGolangConst(source string, output string, packagename string)
 	}
 	defer f.Close()
 
-	_, err = f.WriteString(`// This file is generated using errcntrct tool.\n
-	//Check out for more info "https://github.com/Saucon/errcntrct"`+ 
+	_, err = f.WriteString(`// This file is generated using errcntrct tool. \n
+	// Check out for more info "https://github.com/Saucon/errcntrct"`+ 
 			       "\n" +
 	"package " + packagename + "\n\n\n" +
 	"const (\n")
