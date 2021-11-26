@@ -97,7 +97,7 @@ $ errcntrct gen -h
 A tool to convert your JSON contract into golang. 
 For example:
 
-        errcntrct gen -i errorContract.json -o example/const.go -p contract
+        errcntrct gen -s errorContract.json -o example/const.go -p contract
 
 
 With this you dont need to declare const in go, just copy 
