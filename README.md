@@ -21,13 +21,13 @@ contractError.json
 1. The first need [Go](https://golang.org/), then you can use the below Go command to install errcntrct.
 
 ```sh
-$ go get -u github.com/Saucon/errcntrct
+$ go get -u github.com/saucon/errcntrct
 ```
 
 2. Import it in your code:
 
 ```go
-import "github.com/Saucon/errcntrct"
+import "github.com/saucon/errcntrct"
 ```
 
 ## Quick start
@@ -39,7 +39,7 @@ package main
 import (
 "errors"
 "fmt"
-"github.com/Saucon/errcntrct"
+"github.com/saucon/errcntrct"
 "net/http"
 )
 
@@ -78,7 +78,7 @@ err = You can use `error` or `[]error`
 Install cli
 
 ```sh
-$ go install github.com/Saucon/errcntrct/errcntrct
+$ go install github.com/saucon/errcntrct/errcntrct
 ```
 
 A tool to convert your JSON contract into golang. 
@@ -124,7 +124,7 @@ package main
 import (
 "errors"
 "fmt"
-"github.com/Saucon/errcntrct"
+"github.com/saucon/errcntrct"
 "net/http"
 )
 

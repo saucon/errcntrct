@@ -2,22 +2,24 @@ package errcntrct
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"sync"
 )
 
 type ErrorData struct {
 	Code string      `json:"code"`
-	Msg string       `json:"msg"`
+	Msg  string      `json:"msg"`
 	Data []ErrorData `json:"errors,omitempty"`
 }
 
 var (
-	instance *errCntrct
+	instance = &errCntrct{
+		ErrContract: nil,
+	}
 	once sync.Once
 )
 
-func InitContract(pathfilename string) error{
+func InitContract(pathfilename string) error {
 	var err error
 	var eC map[string]objContract
 
@@ -28,7 +30,7 @@ func InitContract(pathfilename string) error{
 				return err
 			}
 		}
-	}else{
+	} else {
 		eC, err = loadFile(pathfilename)
 		if err != nil {
 			return err
@@ -43,7 +45,6 @@ func InitContract(pathfilename string) error{
 
 	return nil
 }
-
 
 // if err is single object then you can ignore codefamily using empty string ""
 // if err is array then you can fill codefamily with actual error code
@@ -75,11 +76,11 @@ func ErrorMessage(statuscode int, codefamily string, err interface{}) (httpCode 
 			errorData.Code = "9999"
 			errorData.Msg = "Unexpected Error"
 			httpCode = 500
-			for _ ,e := range err.([]error) {
+			for _, e := range err.([]error) {
 				obj := getContract().ErrContract[e.Error()]
 				errorData.Data = append(errorData.Data, ErrorData{
 					Code: e.Error(),
-					Msg: obj.Msg,
+					Msg:  obj.Msg,
 				})
 			}
 			return
@@ -88,14 +89,13 @@ func ErrorMessage(statuscode int, codefamily string, err interface{}) (httpCode 
 		errorData.Code = codefamily
 		errorData.Msg = contract.Msg
 
-		for _ ,e := range err.([]error) {
+		for _, e := range err.([]error) {
 			obj := getContract().ErrContract[e.Error()]
 			errorData.Data = append(errorData.Data, ErrorData{
 				Code: e.Error(),
-				Msg: obj.Msg,
+				Msg:  obj.Msg,
 			})
 		}
-
 
 		return statuscode, errorData
 
@@ -108,22 +108,21 @@ func ErrorMessage(statuscode int, codefamily string, err interface{}) (httpCode 
 	return httpCode, errorData
 }
 
-
 type errCntrct struct {
 	ErrContract map[string]objContract
 }
 
 type objContract struct {
-	ConstVar 	string `json:"var"`
-	Msg 		string `json:"msg"`
+	ConstVar string `json:"var"`
+	Msg      string `json:"msg"`
 }
 
-func loadFile(pathfilename string) (map[string]objContract,error){
+func loadFile(pathfilename string) (map[string]objContract, error) {
 	var file []byte
 	var err error
 	var eC map[string]objContract
 
-	file, err = ioutil.ReadFile(pathfilename)
+	file, err = os.ReadFile(pathfilename)
 	if err != nil {
 		return nil, err
 	}
@@ -139,13 +138,12 @@ func getContract() *errCntrct {
 	return instance
 }
 
-
 // for testing only
 func setContractInstanceNil() {
 	instance = nil
 }
 
-//for testing only
+// for testing only
 func resetContractMapAtInstance() {
 	if instance != nil {
 		instance.ErrContract = nil
