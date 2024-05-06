@@ -9,13 +9,37 @@ import (
 )
 
 func TestLoadContract(t *testing.T) {
+	for i := 0; i < 2; i++ {
+		var err error
+		resetInstance()
+		resetContractMapAtInstance()
+		err = InitContract("errorContract.json")
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		assert.NoError(t, err)
+
+		statusCode, errorData := ErrorMessage(500, "", errors.New("1002"))
+		assert.Equal(t, 500, statusCode)
+		assert.Equal(t, "1002", errorData.Code)
+	}
+}
+
+func BenchmarkLoadContract(b *testing.B) {
 	var err error
+	resetInstance()
 	resetContractMapAtInstance()
 	err = InitContract("errorContract.json")
 	if err != nil {
 		fmt.Println(err)
 	}
-	assert.NoError(t, err)
+
+	assert.NoError(b, err)
+
+	statusCode, errorData := ErrorMessage(500, "", errors.New("1002"))
+	assert.Equal(b, 500, statusCode)
+	assert.Equal(b, "1002", errorData.Code)
 }
 
 func TestErrorMessageWithGoRoutine(t *testing.T) {
@@ -51,9 +75,9 @@ func TestErrorMessageWithGoRoutine(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-
 func TestWrongPathFileName(t *testing.T) {
 	var err error
+	resetInstance()
 	resetContractMapAtInstance()
 	err = InitContract(".json")
 	if err != nil {
@@ -63,7 +87,8 @@ func TestWrongPathFileName(t *testing.T) {
 	fmt.Println(ErrorMessage(500, "", errors.New("1002")))
 
 	assert.Error(t, err)
-	assert.Nil(t, getContract().ErrContract)
+	assert.Nil(t, getContractInstance())
+	assert.Nil(t, getContractInstance().getErrContract())
 }
 
 func TestWrongJsonFormat(t *testing.T) {
@@ -75,7 +100,7 @@ func TestWrongJsonFormat(t *testing.T) {
 	}
 
 	fmt.Println(ErrorMessage(500, "", errors.New("1002")))
-	fmt.Println(getContract())
+	fmt.Println(getContractInstance())
 
 	assert.NoError(t, err)
 }
@@ -89,11 +114,10 @@ func TestWrongJsonFormat2(t *testing.T) {
 	}
 
 	fmt.Println(ErrorMessage(500, "", errors.New("1002")))
-	fmt.Println(getContract())
+	fmt.Println(getContractInstance())
 
 	assert.Error(t, err)
 }
-
 
 func TestErrorArray(t *testing.T) {
 	var err error
@@ -104,9 +128,9 @@ func TestErrorArray(t *testing.T) {
 	}
 
 	fmt.Println(ErrorMessage(500, "1000", []error{
-		errors.New("1002"),errors.New("1002"),errors.New("1002"),
+		errors.New("1002"), errors.New("1002"), errors.New("1002"),
 	}))
-	fmt.Println(getContract())
+	fmt.Println(getContractInstance())
 
 	assert.NoError(t, err)
 }
@@ -120,9 +144,9 @@ func TestErrorArrayCodeFamilyNotFound(t *testing.T) {
 	}
 
 	fmt.Println(ErrorMessage(500, "6969", []error{
-		errors.New("1002"),errors.New("6969"),errors.New("1002"),
+		errors.New("1002"), errors.New("6969"), errors.New("1002"),
 	}))
-	fmt.Println(getContract())
+	fmt.Println(getContractInstance())
 
 	assert.NoError(t, err)
 }
@@ -136,7 +160,7 @@ func TestUnknownErrorType(t *testing.T) {
 	}
 
 	fmt.Println(ErrorMessage(500, "", 10))
-	fmt.Println(getContract())
+	fmt.Println(getContractInstance())
 
 	assert.NoError(t, err)
 }
@@ -144,15 +168,15 @@ func TestUnknownErrorType(t *testing.T) {
 func TestNilInstance(t *testing.T) {
 	var err error
 	resetContractMapAtInstance()
-	setContractInstanceNil()
+	resetInstance()
 	err = InitContract("test/errorContractWrongFormat_test.json")
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	fmt.Println(ErrorMessage(500, "", 10))
-	fmt.Println(getContract())
+	fmt.Println(getContractInstance())
 
 	assert.Error(t, err)
-	assert.Nil(t, getContract())
+	assert.Nil(t, getContractInstance())
 }

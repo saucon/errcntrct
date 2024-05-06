@@ -6,110 +6,39 @@ import (
 	"sync"
 )
 
-type ErrorData struct {
-	Code string      `json:"code"`
-	Msg  string      `json:"msg"`
-	Data []ErrorData `json:"errors,omitempty"`
-}
+const (
+	CODE_109999    = "109999"
+	MESSAGE_109999 = "Contract Error, check InitContract(pathfilename string) or .json format"
 
-var (
-	instance = &errCntrct{
-		ErrContract: nil,
-	}
-	once sync.Once
+	CODE_109998    = "109998"
+	MESSAGE_109998 = "Unknown err Type"
+
+	CODE_9999    = "9999"
+	MESSAGE_9999 = "Unexpected Error"
 )
 
-func InitContract(pathfilename string) error {
-	var err error
-	var eC map[string]objContract
+var (
+	instance    *errContractInstance = nil
+	once        sync.Once
+	lock        sync.Mutex
+	errContract map[string]objContract = nil
+)
 
-	if instance != nil {
-		if instance.ErrContract == nil {
-			instance.ErrContract, err = loadFile(pathfilename)
-			if err != nil {
-				return err
-			}
-		}
-	} else {
-		eC, err = loadFile(pathfilename)
-		if err != nil {
-			return err
-		}
-	}
-
-	once.Do(func() {
-		instance = &errCntrct{
-			ErrContract: eC,
-		}
-	})
-
-	return nil
+type errContractInstance struct {
 }
 
-// if err is single object then you can ignore codefamily using empty string ""
-// if err is array then you can fill codefamily with actual error code
-func ErrorMessage(statuscode int, codefamily string, err interface{}) (httpCode int, errorData ErrorData) {
-	if getContract() == nil {
-		errorData.Code = "109999"
-		errorData.Msg = "Contract Error, check InitContract(pathfilename string) or .json format"
-		httpCode = 500
+func (ec *errContractInstance) getErrContract() map[string]objContract {
+	if ec == nil {
+		return nil
+	}
+	return errContract
+}
+
+func (ec *errContractInstance) setErrContract(eC map[string]objContract) {
+	if ec == nil {
 		return
 	}
-
-	switch err.(type) {
-	case error:
-		contract := getContract().ErrContract[err.(error).Error()]
-		if contract.Msg == "" || contract.ConstVar == "" {
-			errorData.Code = "9999"
-			errorData.Msg = "Unexpected Error"
-			httpCode = 500
-			return
-		}
-
-		errorData.Code = err.(error).Error()
-		errorData.Msg = contract.Msg
-
-		return statuscode, errorData
-	case []error:
-		contract := getContract().ErrContract[codefamily]
-		if contract.Msg == "" || contract.ConstVar == "" {
-			errorData.Code = "9999"
-			errorData.Msg = "Unexpected Error"
-			httpCode = 500
-			for _, e := range err.([]error) {
-				obj := getContract().ErrContract[e.Error()]
-				errorData.Data = append(errorData.Data, ErrorData{
-					Code: e.Error(),
-					Msg:  obj.Msg,
-				})
-			}
-			return
-		}
-
-		errorData.Code = codefamily
-		errorData.Msg = contract.Msg
-
-		for _, e := range err.([]error) {
-			obj := getContract().ErrContract[e.Error()]
-			errorData.Data = append(errorData.Data, ErrorData{
-				Code: e.Error(),
-				Msg:  obj.Msg,
-			})
-		}
-
-		return statuscode, errorData
-
-	default:
-		errorData.Code = "109998"
-		errorData.Msg = "Unknown err Type"
-		httpCode = 500
-	}
-
-	return httpCode, errorData
-}
-
-type errCntrct struct {
-	ErrContract map[string]objContract
+	errContract = eC
 }
 
 type objContract struct {
@@ -117,12 +46,112 @@ type objContract struct {
 	Msg      string `json:"msg"`
 }
 
-func loadFile(pathfilename string) (map[string]objContract, error) {
+type ErrorData struct {
+	Code string      `json:"code"`
+	Msg  string      `json:"msg"`
+	Data []ErrorData `json:"errors,omitempty"`
+}
+
+func InitContract(pathFilename string) error {
+	var err error
+	var eC map[string]objContract
+
+	if instance != nil {
+		if instance.getErrContract() == nil {
+			eC, err = loadFile(pathFilename)
+			if err != nil {
+				return err
+			}
+			instance.setErrContract(eC)
+		}
+	} else {
+		eC, err = loadFile(pathFilename)
+		if err != nil {
+			return err
+		}
+	}
+
+	once.Do(func() {
+		instance = &errContractInstance{}
+		instance.setErrContract(eC)
+	})
+
+	return nil
+}
+
+// ErrorMessage is a function to get error message from error code
+// if err is single object then you can ignore codeFamily using empty string ""
+// if err is array then you can fill codeFamily with actual error code
+func ErrorMessage(statusCode int, codeFamily string, err interface{}) (int, ErrorData) {
+	var (
+		errorData ErrorData
+		httpCode  int
+	)
+	if getContractInstance() == nil {
+		errorData.Code = CODE_109999
+		errorData.Msg = MESSAGE_109999
+		httpCode = 500
+		return httpCode, errorData
+	}
+
+	switch err.(type) {
+	case error:
+		contract := getContractInstance().getErrContract()[err.(error).Error()]
+		if contract.Msg == "" || contract.ConstVar == "" {
+			errorData.Code = CODE_9999
+			errorData.Msg = MESSAGE_9999
+			httpCode = 500
+			return httpCode, errorData
+		}
+
+		errorData.Code = err.(error).Error()
+		errorData.Msg = contract.Msg
+
+		return statusCode, errorData
+	case []error:
+		contract := getContractInstance().getErrContract()[codeFamily]
+		if contract.Msg == "" || contract.ConstVar == "" {
+			errorData.Code = CODE_9999
+			errorData.Msg = MESSAGE_9999
+			httpCode = 500
+			for _, e := range err.([]error) {
+				obj := getContractInstance().getErrContract()[e.Error()]
+				errorData.Data = append(errorData.Data, ErrorData{
+					Code: e.Error(),
+					Msg:  obj.Msg,
+				})
+			}
+			return httpCode, errorData
+		}
+
+		errorData.Code = codeFamily
+		errorData.Msg = contract.Msg
+
+		for _, e := range err.([]error) {
+			obj := getContractInstance().getErrContract()[e.Error()]
+			errorData.Data = append(errorData.Data, ErrorData{
+				Code: e.Error(),
+				Msg:  obj.Msg,
+			})
+		}
+
+		return statusCode, errorData
+
+	default:
+		errorData.Code = CODE_109998
+		errorData.Msg = MESSAGE_109998
+		httpCode = 500
+	}
+
+	return httpCode, errorData
+}
+
+func loadFile(pathFilename string) (map[string]objContract, error) {
 	var file []byte
 	var err error
 	var eC map[string]objContract
 
-	file, err = os.ReadFile(pathfilename)
+	file, err = os.ReadFile(pathFilename)
 	if err != nil {
 		return nil, err
 	}
@@ -134,18 +163,21 @@ func loadFile(pathfilename string) (map[string]objContract, error) {
 	return eC, nil
 }
 
-func getContract() *errCntrct {
+func getContractInstance() *errContractInstance {
 	return instance
 }
 
 // for testing only
-func setContractInstanceNil() {
-	instance = nil
+func resetInstance() {
+	lock.Lock()
+	defer lock.Unlock()
+	instance = nil     // Clear the existing instance
+	once = sync.Once{} //
 }
 
 // for testing only
 func resetContractMapAtInstance() {
 	if instance != nil {
-		instance.ErrContract = nil
+		instance.setErrContract(nil)
 	}
 }

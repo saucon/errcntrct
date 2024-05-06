@@ -2,6 +2,5 @@
     "1000": {"var": "ErrInvalidRequestFamily", "msg": "Invalid Request"},
     "1002": {"var": "ErrInvalidDateFormat", "msg": "Invalid date format"},
     "1003": {"var": "ErrEmailNotFound", "msg": "Could not find email"},
-
     "9999": {"var": "ErrUnexpectedError", "msg": "Unexpected Error"}
 }
