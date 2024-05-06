@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,7 +17,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/Saucon/errcntrct/errcntrct/utils"
+	"github.com/saucon/errcntrct/errcntrct/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -40,27 +40,31 @@ the generated code to your project`,
 		fmt.Println("Generated error JSON contract to const in go language")
 		source, err := cmd.Flags().GetString("source")
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 
 		output, err := cmd.Flags().GetString("output")
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 
 		pkg, err := cmd.Flags().GetString("package")
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 
 		if err := utils.GenerateCodeFile(source, output, pkg, utils.TemplateJSONtoGolangConst); err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 
 		fmt.Println("SUCCESS GENERATE FILE ..........ok \n")
-		fmt.Println("JSON file resource path :\n",source)
-		fmt.Println("Package in golang :\n",pkg)
-		fmt.Println("File generated path :\n",output)
+		fmt.Println("JSON file resource path :\n", source)
+		fmt.Println("Package in golang :\n", pkg)
+		fmt.Println("File generated path :\n", output)
 	},
 }
 
@@ -79,9 +83,7 @@ func init() {
 	genCmd.Flags().StringVarP(&packagename, "package", "p", "", "Package const file ")
 	rootCmd.MarkFlagRequired("package")
 
-
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// genCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
-
